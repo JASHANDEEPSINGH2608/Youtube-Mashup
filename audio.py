@@ -2,35 +2,53 @@ import os
 import yt_dlp
 from pydub import AudioSegment
 import argparse
+import threading
 
-def download_audio(keyword, num_videos, trim_duration, output_file, download_dir):
+def download_video(result, download_dir):
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
         'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),
-        'noplaylist': True,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-            'preferredquality': '192',
+            'preferredquality': '128',  # Reduced quality for faster download
         }],
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            print(f"Downloading: {result['title']} from {result['webpage_url']}")
+            ydl.download([result['webpage_url']])
+        except Exception as e:
+            print(f"Error downloading {result['title']}: {e}")
+
+def download_audio(keyword, num_videos, download_dir):
+    ydl_opts = {
+        'quiet': True,
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         search_results = ydl.extract_info(f"ytsearch{num_videos}:{keyword}", download=False)['entries']
+
+        threads = []
         for result in search_results:
-            try:
-                print(f"Downloading: {result['title']} from {result['webpage_url']}")
-                ydl.download([result['webpage_url']])
-            except Exception as e:
-                print(f"Error downloading {result['title']}: {e}")
+            thread = threading.Thread(target=download_video, args=(result, download_dir))
+            threads.append(thread)
+            thread.start()
 
-    print(f"Contents of download directory '{download_dir}':")
-    all_files = os.listdir(download_dir)
-    for file in all_files:
-        print(file)
+            # To limit the number of concurrent downloads
+            if len(threads) % 5 == 0:
+                for t in threads:
+                    t.join()
+                threads.clear()
 
-    audio_paths = [os.path.join(download_dir, file) for file in all_files if file.endswith('.mp3')]
+        # Join remaining threads
+        for t in threads:
+            t.join()
+
+def process_audios(trim_duration, output_file):
+    audio_paths = [file for file in os.listdir('.') if file.endswith('.mp3')]
     print(f"Detected mp3 files: {audio_paths}")
 
     if not audio_paths:
@@ -63,11 +81,14 @@ def main():
     parser.add_argument('num_videos', type=int, help='Number of videos to download.')
     parser.add_argument('trim_duration', type=int, help='Duration in seconds to trim from each audio file.')
     parser.add_argument('output_file', type=str, help='Output file name for the combined audio.')
-    parser.add_argument('download_dir', type=str, help='Directory to save downloaded audio files.')
 
     args = parser.parse_args()
 
-    download_audio(args.keyword, args.num_videos, args.trim_duration, args.output_file, args.download_dir)
+    print(f"Downloading {args.num_videos} audio files for '{args.keyword}'...")
+    download_audio(args.keyword, args.num_videos, './')
+
+    print(f"Processing audios to trim and combine into {args.output_file}...")
+    process_audios(args.trim_duration, args.output_file)
 
 if __name__ == "__main__":
     main()
