@@ -1,4 +1,4 @@
-# Audio Downloader & Merger
+# Audio Mashup
 This Python script allows users to download the audio from a set of YouTube videos based on a given keyword and compile trimmed sections of the audio into a single MP3 file.
 
 # Features
