@@ -16,10 +16,10 @@ python audio.py  "keyword" no.of videos trim_duration outputfile.mp3
 ## INPUT
 The input to the script is given through command-line arguments:
 
-Keyword: A string used to search YouTube for videos.
-Number of Videos: An integer indicating how many videos you want to download.
-Trim Duration: The duration in seconds each downloaded audio should be trimmed to.
-Output File: The file name for the combined output audio.
+- Keyword: A string used to search YouTube for videos.
+- Number of Videos: An integer indicating how many videos you want to download.
+- Trim Duration: The duration in seconds each downloaded audio should be trimmed to.
+- Output File: The file name for the combined output audio.
 
 
 ## OUTPUT
