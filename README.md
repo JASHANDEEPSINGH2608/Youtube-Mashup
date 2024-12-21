@@ -23,4 +23,5 @@ The input to the script is given through command-line arguments:
 
 
 ## OUTPUT
-The script produces a combined MP3 file, which contains the trimmed audio from all downloaded videos. The output file is saved with the name provided by the user.
+- The script produces a combined MP3 file, which contains the trimmed audio from all downloaded videos.
+- The output file is saved with the name provided by the user.
